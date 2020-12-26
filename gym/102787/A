@@ -1,0 +1,110 @@
+#include <bits/stdc++.h>
+
+#define endl '\n'
+#define fi first
+#define se second
+#define MOD(n,k) ( ( ((n) % (k)) + (k) ) % (k))
+#define forn(i,n) for (int i = 0; i < (n); i++)
+#define forr(i,a,b) for (int i = a; i <= b; i++)
+#define all(v) v.begin(), v.end()
+#define pb(x) push_back(x)
+
+using namespace std;
+
+typedef long long ll;
+typedef long double ld;
+typedef pair<int, int> ii;
+typedef vector<int> vi;
+typedef vector<vi> vvi;
+typedef vector<ii> vii;
+
+const int MX = 600005, SIG = 3;
+const int mod[SIG] = {1000000007, 1000000009, 1000000021};
+ll base[SIG][MX];
+
+struct Node {
+	Node *left, *right;
+	int val, size, key;
+	
+	Node (int val, int key) : left(0), right(0), val(val), size(1), key(key) {}
+};
+
+int nodeSize (Node *t) {
+	return t ? t->size : 0;
+}
+
+void update (Node *t) {
+	if (!t) return;
+	t->size = 1;
+	if (Node *u = t->left) t->size += u->size;
+	if (Node *u = t->right) t->size += u->size;
+}
+
+void merge (Node* &t, Node* t1, Node* t2) {
+	if (!t1) t = t2;
+	else if (!t2) t = t1;
+	else if (t1->key > t2->key)
+		merge (t1->right, t1->right, t2), t = t1;
+	else
+		merge (t2->left, t1, t2->left), t = t2;
+	update(t);
+}
+
+void split (Node* t, int i, Node* &t1, Node* &t2) {
+	if(!t) return void(t1 = t2 = NULL);
+	int curr = nodeSize(t->left);
+	if (i <= curr)
+		split(t->left, i, t1, t->left), t2 = t;
+	else
+		split(t->right, i - curr - 1, t->right, t2), t1 = t;
+	update(t);
+}
+
+int n;
+Node *root;
+
+void dfs (Node *t) {
+	if (!t) return;
+	
+	dfs(t->left);
+	cout << t->val << " ";
+	dfs(t->right);
+}
+
+int main () {
+	ios_base::sync_with_stdio(0); cin.tie(0);
+	srand(0);
+	
+	cin >> n;
+	
+	for (int i = 1; i <= n; i++) {
+		Node *in = new Node(i, rand());
+		merge(root, root, in);
+	}
+	
+	for (int i = 1; i <= n; i++) {
+		int a, b;
+		cin >> a >> b;
+		if (a >= b) continue;
+		
+		int len = min(b - a, n - b + 1);
+		Node *t1, *t2, *t3, *t4, *t5;
+		
+		split(root, b + len - 1, t4, t5);
+		split(t4, b - 1, t3, t4);
+		split(t3, a + len - 1, t2, t3);
+		split(t2, a - 1, t1, t2);
+		
+		swap(t2, t4);
+		
+		merge(root, t1, t2);
+		merge(root, root, t3);
+		merge(root, root, t4);
+		merge(root, root, t5);
+	}
+	
+	dfs(root);
+	cout << endl;
+	
+	return 0;
+}
